@@ -1,7 +1,8 @@
+
 variable "aws_region" {
-  description = "AWS region in which to create the lab resources."
+  description = "AWS region for this lab."
   type        = string
-  default     = "us-east-1"
+  default     = "us-west-2"
 }
 
 variable "name_prefix" {
@@ -19,28 +20,15 @@ variable "environment" {
 variable "vpc_cidr" {
   description = "IPv4 CIDR block for the VPC."
   type        = string
-  default     = "10.0.0.0/16"
+  default     = "192.168.0.0/16"
 
   validation {
-    condition     = can(cidrnetmask(var.vpc_cidr))
-    error_message = "vpc_cidr must be a valid IPv4 CIDR block."
+    condition = (
+      can(cidrnetmask(var.vpc_cidr)) &&
+      tonumber(split("/", var.vpc_cidr)[1]) >= 16 &&
+      tonumber(split("/", var.vpc_cidr)[1]) <= 20
+    )
+
+    error_message = "vpc_cidr must be a valid IPv4 CIDR with prefix length between /16 and /20."
   }
-}
-
-variable "subnet_cidr" {
-  description = "IPv4 CIDR block for the subnet; must be inside the VPC CIDR."
-  type        = string
-  default     = "10.0.1.0/24"
-
-  validation {
-    condition     = can(cidrnetmask(var.subnet_cidr))
-    error_message = "subnet_cidr must be a valid IPv4 CIDR block."
-  }
-}
-
-variable "availability_zone" {
-  description = "Optional Availability Zone for the subnet. Leave null to let AWS select one."
-  type        = string
-  default     = null
-  nullable    = true
 }
